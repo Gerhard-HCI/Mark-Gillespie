@@ -1,1 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0D2847">
+  <title>Mark Gillespie · Tokyo Dec 2026 · Happy Camper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Palette is hardcoded as hex throughout (iOS Safari var() safety). Tokens kept for reference only. */
+    :root{--font-serif:'Cormorant Garamond','Palatino Linotype',Georgia,serif;--font-sans:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:100%;height:100%;background-color:#FAF8F4}
+    body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:#FAF8F4;color:#0A1A2F;line-height:1.55;-webkit-font-smoothing:antialiased;height:100%;margin:0;padding:0}
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    input{font-family:inherit}
+
+    /* ── HEADER ── */
+    #app-header{position:fixed;top:0;left:0;right:0;z-index:9999;background-color:#0D2847;background-image:linear-gradient(160deg,#0F3160 0%,#0D2847 55%,#071B35 100%);border-bottom:1px solid rgba(255,255,255,.08)}
+    .hdr-top{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px}
+    .hdr-left{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .hdr-flag{font-size:17px}
+    .hdr-dest{font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-weight:300;letter-spacing:.4px;color:#fff;white-space:nowrap}
+    .hdr-hc{font-size:8px;color:rgba(255,255,255,.40);letter-spacing:.8px;text-transform:uppercase;margin-top:1px}
+    .hdr-names{text-align:center;padding:0 14px 7px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .hdr-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(22px,5vw,34px);font-weight:300;letter-spacing:.4px;color:#fff;line-height:1.15}
+    .hdr-name2{font-size:clamp(9px,1.8vw,11px);color:rgba(255,255,255,.45);letter-spacing:1.4px;text-transform:uppercase;margin-top:3px}
+    .hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    #jst-clock{font-family:'SF Mono',Menlo,monospace;font-size:14px;font-weight:300;letter-spacing:1px;color:#fff;display:block;text-align:right;white-space:nowrap}
+    #trip-day-label{font-size:8.5px;color:rgba(255,255,255,.38);letter-spacing:.4px;margin-top:1px;display:block;text-align:right;white-space:nowrap}
+
+    /* ── TAB NAV ── */
+    .tab-nav{display:flex;border-top:1px solid rgba(255,255,255,.07);overflow-x:auto;scrollbar-width:none}
+    .tab-nav::-webkit-scrollbar{display:none}
+    .tab-btn{flex-shrink:0;background:transparent!important;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,.42)!important;font-size:10.5px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;padding:9px 13px 7px;white-space:nowrap}
+    .tab-btn.active{color:#E8A4B2!important;border-bottom-color:#E8A4B2!important}
+
+    /* ── MAIN ── */
+    #main-content{overflow-y:auto;-webkit-overflow-scrolling:touch;height:100vh;background-color:#FAF8F4}
+    .tab-panel{display:none;padding:14px 14px 80px;background-color:#FAF8F4;animation:panelFade .22s ease both}
+    .tab-panel.active{display:block}
+    @keyframes panelFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── BANNER ── */
+    .trip-banner,.disc-banner{background-color:#0D2847;background-image:linear-gradient(135deg,#0D2847 0%,#0A2040 55%,#04111F 100%);border-radius:18px;padding:22px 20px 20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden}
+    .trip-banner-kana{font-family:'Cormorant Garamond',Georgia,serif;font-size:11px;font-style:italic;opacity:.55;letter-spacing:1px;margin-bottom:4px}
+    .trip-banner h2,.disc-banner h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:1px;margin-bottom:4px}
+    .banner-dates{font-size:13px;opacity:.72}
+    .disc-banner p{font-size:12px;opacity:.65}
+    .banner-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+    .banner-chip{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 10px;font-size:11px}
+    .section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#90A8BE;padding:8px 2px 6px}
+
+    /* ── LEGEND ── */
+    .booking-legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 14px;background-color:#FFFFFF;border-radius:12px;margin-bottom:10px;border:1px solid #EBF2FA}
+    .bl-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:#5A7590;font-weight:500}
+    .bl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+    .bl-dot.confirmed{background:#C8E6C9;border:1px solid rgba(27,94,32,.3)}
+    .bl-dot.requested{background:#80DEEA;border:1px solid rgba(0,77,86,.3)}
+    .bl-dot.self-booked{background:#FADADD;border:1px solid rgba(123,26,26,.3)}
+    .bl-dot.suggestion{background:#BBDEFB;border:1px solid rgba(13,60,110,.3)}
+    .bl-dot.walk-in{background:#FFF9E6;border:1px solid rgba(107,80,0,.3)}
+    .bl-dot.pending{background:#ECEFF1;border:1px solid rgba(84,110,122,.3)}
+
+    /* ── DAY CARDS ── */
+    .day-card{background-color:#FFFFFF;border-radius:18px;margin-bottom:10px;box-shadow:0 2px 12px rgba(13,40,71,.10),0 1px 3px rgba(13,40,71,.06);overflow:hidden;border:1px solid #EBF2FA;animation:cardIn .28s ease both}
+    @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .day-card.is-today{border-color:#0D2847;box-shadow:0 0 0 1.5px #0D2847,0 2px 12px rgba(13,40,71,.10)}
+    .day-card.is-past{opacity:.58}
+    .day-card.is-tbc{background-color:#F7F9FC;border-style:dashed;border-color:#C9D6E4}
+    .day-header{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+    .day-num{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background-color:#EBF2FA;color:#5A7590}
+    .day-card.is-today .day-num{background-color:#0D2847;color:#fff}
+    .day-card.has-feature .day-num{background-color:#FBF5E6;color:#B07C22;border:1px solid rgba(176,124,34,.3)}
+    .day-header-info{flex:1;min-width:0}
+    .day-name{font-size:15px;font-weight:600;color:#0A1A2F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .day-sub{font-size:11px;color:#90A8BE;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .day-city-badge{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:#EBF3FF;color:#1A5FAA}
+    .today-pill{font-size:10px;font-weight:700;background:#0D2847;color:#fff;padding:2px 8px;border-radius:20px}
+    .occasion-pill{font-size:10px;font-weight:600;background:#FDF2F5;color:#A6455C;padding:2px 8px;border-radius:20px;border:1px solid rgba(166,69,92,.2)}
+    .day-chevron{color:#90A8BE;font-size:14px;flex-shrink:0;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+    .day-card.open .day-chevron{transform:rotate(180deg)}
+    .day-body{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1)}
+    .day-card.open .day-body{max-height:5000px}
+    .day-body-inner{padding:0 16px 16px}
+
+    .hotel-bar{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 13px;margin-bottom:12px;background:#EBF4FF;border-left:3px solid #0D2847}
+    .hotel-bar.tbc{background:#F3F5F7;border-left-color:#90A4AE}
+    .hb-name{font-size:12px;font-weight:600;color:#0D2847}
+    .hb-detail{font-size:11px;color:#1A3F6F;margin-top:1px}
+    .day-note-bar{background:#EEF4FF;border-radius:12px;border-left:3px solid #4A80C0;padding:10px 13px;font-size:12px;color:#233D5C;line-height:1.55;margin-bottom:12px}
+
+    .weather-widget{display:flex;align-items:center;gap:10px;background:#FBF5E6;border-radius:12px;border:1px solid rgba(176,124,34,.15);padding:10px 13px;margin-bottom:14px}
+    .wx-icon{font-size:26px}.wx-info{flex:1}.wx-temp{font-size:14px;font-weight:600}.wx-desc{font-size:11px;color:#5A7590;margin-top:2px}.wx-rain{font-size:12px;font-weight:500;color:#1D6FAD;flex-shrink:0}
+
+    /* ── TIMELINE ── */
+    .timeline{position:relative;padding-left:75px}
+    .stop-item{position:relative;margin-bottom:14px}
+    .stop-item::after{content:'';position:absolute;left:-16px;top:29px;bottom:-14px;width:2px;background:#D8E4F0;z-index:1}
+    .stop-item:last-child::after{display:none}
+    .stop-time{position:absolute;left:-70px;top:11px;width:42px;text-align:right;font-size:10px;font-weight:600;color:#90A8BE;line-height:1.4}
+    .stop-dot{position:absolute;left:-25px;top:9px;width:18px;height:18px;border-radius:50%;border:2.5px solid #ccc;background:#fff;z-index:2}
+    .stop-dot.t-restaurant{border-color:#8B1A1A;background:#F8EDED}
+    .stop-dot.t-transport{border-color:#0D2847;background:#EEF4FF}
+    .stop-dot.t-flight{border-color:#0277BD;background:#E1F5FE}
+    .stop-dot.t-pending{border-color:#607D8B;background:#ECEFF1}
+    .stop-card{background-color:#FAF8F4;border-radius:12px;border:1px solid #EBF2FA;padding:11px 13px}
+    .stop-card.is-pending{background-color:#F5F5F5;border-color:rgba(96,125,139,.15)}
+    .stop-card.is-feature{background-color:#FFFFFF;border-color:rgba(176,124,34,.28);box-shadow:0 1px 6px rgba(176,124,34,.08)}
+    .stop-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .stop-title-wrap{flex:1;min-width:0}
+    .stop-icon{font-size:13px;margin-right:5px}
+    .stop-title{font-size:14px;font-weight:600;color:#0A1A2F;line-height:1.3}
+    .stop-card.is-feature .stop-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:21px;font-weight:600;letter-spacing:.2px}
+    .stop-subtitle{font-size:11px;color:#5A7590;margin-top:2px}
+    .stop-badge{font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:5px;flex-shrink:0;white-space:nowrap}
+    .stop-badge.confirmed{background:#C8E6C9;color:#1B5E20;border:1px solid rgba(27,94,32,.18)}
+    .stop-badge.requested{background:#80DEEA;color:#004D56;border:1px solid rgba(0,77,86,.18)}
+    .stop-badge.pending{background:#ECEFF1;color:#546E7A;border:1px solid rgba(84,110,122,.2)}
+    .stop-badge.logistics{background:#FFE0B2;color:#BF360C;border:1px solid rgba(191,54,12,.18)}
+    .stop-facts{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+    .fact{font-size:10.5px;font-weight:500;color:#233D5C;background:#EEF4FF;border-radius:6px;padding:3px 8px}
+    .fact.gold{background:#FBF5E6;color:#8A5E12}
+    .stop-notes{font-size:12.5px;color:#233D5C;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #EBF2FA}
+    .stop-alert{display:flex;align-items:flex-start;gap:6px;margin-top:8px;padding:7px 10px;background:#FFFBEB;border-radius:8px;border-left:3px solid #F59E0B;font-size:11px;color:#92400E;font-weight:500;line-height:1.4}
+    .assume{font-size:10px;color:#90A8BE;font-style:italic;margin-top:6px}
+    .map-actions{display:flex;gap:5px;margin-top:10px}
+    .map-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 5px;border-radius:8px;font-size:11px;font-weight:500;min-height:38px;border:1px solid #D8E4F0!important;background-color:#FFFFFF!important;color:#233D5C!important}
+    .map-btn:active{transform:scale(.96)}
+    .map-btn.mp{background-color:#0D2847!important;color:#FFFFFF!important;border-color:#0D2847!important;font-weight:600}
+    .map-btn.taxi{background-color:#FBF5E6!important;color:#8A5E12!important;border-color:rgba(176,124,34,.3)!important}
+
+    /* ── UTILITIES ── */
+    .util-card{background-color:#FFFFFF;border-radius:18px;padding:18px;box-shadow:0 2px 12px rgba(13,40,71,.10);border:1px solid #EBF2FA;margin-bottom:12px}
+    .util-card-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;font-weight:400;color:#0A1A2F;margin-bottom:14px;letter-spacing:.3px}
+    .fx-row{display:flex;gap:8px;align-items:flex-end}
+    .fx-group{flex:1;min-width:0}
+    .fx-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#90A8BE;margin-bottom:5px}
+    .fx-input{width:100%;padding:10px 12px;border:1.5px solid #D8E4F0;border-radius:8px;font-size:18px;font-weight:500;color:#0A1A2F;background-color:#FAF8F4;outline:none;-webkit-appearance:none}
+    .fx-input:focus{border-color:#0D2847}
+    .fx-swap-btn{width:40px;height:40px;border-radius:50%;background-color:#EEF4FF!important;border:none;color:#0D2847!important;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .fx-rate-note{font-size:11px;color:#90A8BE;text-align:center;margin-top:10px;line-height:1.5}
+    .info-list{list-style:none}
+    .info-list li{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid #EBF2FA;font-size:13px;line-height:1.55}
+    .info-list li:last-child{border-bottom:none;padding-bottom:0}
+    .info-emoji{font-size:17px;flex-shrink:0;margin-top:1px}
+    .info-text{color:#233D5C}
+    .info-text strong{color:#0A1A2F;display:block;margin-bottom:1px}
+    .rule-item{padding:9px 0;border-bottom:1px solid #EBF2FA;display:flex;gap:10px;font-size:12.5px;line-height:1.5;color:#233D5C}
+    .rule-item:last-child{border-bottom:none}
+    .rule-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+    .rule-text strong{color:#0A1A2F;display:block}
+    .rule-item.critical{background:#FFF5F5;margin:0 -18px;padding:12px 18px;border-left:3px solid #C62828}
+
+    /* ── TABLES (reservations list) ── */
+    .res-card{background-color:#FFFFFF;border-radius:18px;margin-bottom:10px;box-shadow:0 2px 12px rgba(13,40,71,.10);border:1px solid rgba(27,94,32,.22);overflow:hidden}
+    .res-row{display:flex;align-items:center;gap:14px;padding:14px 16px}
+    .res-row+.res-row{border-top:1px solid #EBF2FA}
+    .res-date{width:58px;text-align:center;flex-shrink:0}
+    .res-date-d{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:600;color:#0D2847;line-height:1}
+    .res-date-m{font-size:9px;font-weight:600;letter-spacing:.6px;white-space:nowrap;text-transform:uppercase;color:#90A8BE;margin-top:2px}
+    .res-info{flex:1;min-width:0}
+    .res-name{font-size:15px;font-weight:600;color:#0A1A2F}
+    .res-meta{font-size:11px;color:#5A7590;margin-top:2px}
+    .res-map{padding:8px 12px;border-radius:8px;font-size:13px;border:1px solid #D8E4F0;background-color:#FFFFFF;color:#233D5C}
+
+    /* ── DISCOVER ── */
+    .disc-feature{background-color:#0D2847;background-image:linear-gradient(180deg,#0D2847 0%,#142647 100%);color:#f3eee0;border-radius:18px;padding:22px 20px 20px;margin-bottom:14px;position:relative;overflow:hidden;border:1px solid rgba(176,124,34,.2)}
+    .disc-feature.plum{background-color:#1a0f2e;background-image:linear-gradient(180deg,#1a0f2e 0%,#2d1b47 100%)}
+    .disc-feature-label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#B07C22;font-weight:600;margin-bottom:12px}
+    .disc-feature-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:300;margin:0 0 4px;color:#f3eee0}
+    .disc-feature-by{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:15px;color:#B07C22;margin-bottom:14px}
+    .disc-feature-p{font-size:13px;line-height:1.6;color:rgba(243,238,224,.78);margin:0 0 16px}
+    .disc-feature-cta{display:inline-flex;align-items:center;gap:6px;background-color:#B07C22!important;color:#0D2847!important;padding:10px 18px;border-radius:99px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+    .disc-feature-ig{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;border-radius:99px;font-size:11.5px;font-weight:600;color:#f3eee0!important;border:1px solid rgba(244,229,191,.3)}
+    .disc-card{background-color:#FFFFFF;border:1px solid #EBF2FA;border-radius:18px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 12px rgba(13,40,71,.10)}
+    .disc-card-head{padding:14px 18px 10px;border-bottom:1px solid #EBF2FA}
+    .disc-card-head-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;font-weight:500;color:#0A1A2F}
+    .disc-card-body{padding:8px 12px 12px}
+    .disc-item{display:flex;align-items:center;gap:12px;padding:10px;background-color:#F5F2EE;border-radius:10px;margin-bottom:6px;border:1px solid #EBF2FA}
+    .disc-item:last-child{margin-bottom:0}
+    .disc-item-info{flex:1;min-width:0}
+    .disc-item-name{font-size:13.5px;font-weight:600;color:#0A1A2F;line-height:1.25}
+    .disc-item-sub{font-size:11px;color:#5A7590;margin-top:2px;font-style:italic}
+    .disc-arrow{font-size:16px;color:#B07C22;flex-shrink:0}
+
+    /* ── EMERGENCY ── */
+    .emergency-banner{background-color:#0D2847;border-radius:18px;padding:18px 20px;color:#fff;margin-bottom:14px;text-align:center}
+    .emergency-banner h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:300;margin-bottom:4px}
+    .emergency-banner p{font-size:12px;opacity:.75}
+    .contact-card{background-color:#FFFFFF;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(13,40,71,.10);border:1px solid #EBF2FA;margin-bottom:12px}
+    .contact-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #EBF2FA;gap:10px}
+    .contact-row:last-child{border-bottom:none}
+    .contact-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .contact-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+    .ci-r{background:#FFEBEE}.ci-b{background:#E3F2FD}.ci-n{background:#EEF4FF}.ci-o{background:#FFF3E0}
+    .contact-label{font-size:13px;font-weight:600;color:#0A1A2F}
+    .contact-sub{font-size:11.5px;color:#5A7590;margin-top:1px}
+    .call-btn{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap;border:none;flex-shrink:0}
+    .cn{background-color:#0D2847!important;color:#fff!important}.cr{background-color:#C62828!important;color:#fff!important}.cb{background-color:#0277BD!important;color:#fff!important}
+
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(13,40,71,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;pointer-events:none;opacity:0;transition:all .22s cubic-bezier(.4,0,.2,1);z-index:99999;white-space:nowrap;max-width:90vw}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    @media(min-width:700px){
+      .tab-nav{padding:0 30px}
+      .tab-btn{font-size:12px;padding:10px 18px}
+      .tab-panel{max-width:900px;margin-left:auto;margin-right:auto;padding:24px 32px 60px}
+    }
+  </style>
+</head>
+<body style="background-color:#FAF8F4">
+
+<header id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:9999;background-color:#0D2847;background-image:linear-gradient(160deg,#0F3160 0%,#0D2847 55%,#071B35 100%);">
+  <div class="hdr-top">
+    <div class="hdr-left">
+      <span class="hdr-flag">🗾</span>
+      <div>
+        <div class="hdr-dest">Tokyo · December 2026</div>
+        <div class="hdr-hc">Happy Camper · v1</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div>
+        <span id="jst-clock">--:--</span>
+        <span id="trip-day-label">Japan Standard Time</span>
+      </div>
+      <img src="data:image/png;base64,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" alt="Happy Camper" height="40" style="display:block;height:40px;width:auto;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));">
+    </div>
+  </div>
+  <div class="hdr-names">
+    <div class="hdr-name">Mark Gillespie</div>
+    <div class="hdr-name2">Penny &middot; Danny &middot; Amanda</div>
+  </div>
+  <nav class="tab-nav" aria-label="Sections">
+    <button class="tab-btn active" data-tab="itinerary">Itinerary</button>
+    <button class="tab-btn" data-tab="tables">Tables</button>
+    <button class="tab-btn" data-tab="discover">Discover</button>
+    <button class="tab-btn" data-tab="utilities">Utilities</button>
+    <button class="tab-btn" data-tab="emergency">Emergency</button>
+  </nav>
+</header>
+
+<main id="main-content" style="background-color:#FAF8F4">
+  <section id="tab-itinerary" class="tab-panel active" aria-label="Itinerary"></section>
+  <section id="tab-tables"    class="tab-panel" aria-label="Reservations"></section>
+  <section id="tab-discover"  class="tab-panel" aria-label="Discover Tokyo"></section>
+  <section id="tab-utilities" class="tab-panel" aria-label="Utilities"></section>
+  <section id="tab-emergency" class="tab-panel" aria-label="Emergency"></section>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ═══════════════════════════════════════════════════════
+   CONFIG
+   FX_RATE: JPY per USD — planning canvas (GoogleFinance JPYUSD 0.006298)
+   Weather: Open-Meteo, free, no API key required.
+═══════════════════════════════════════════════════════ */
+var FX_RATE = 158.78;
+var WX_LAT = 35.6762, WX_LNG = 139.6503;
+
+/* ═══════════════════════════════════════════════════════
+   BOOKING STATUS RULES (spreadsheet colour legend)
+   confirmed   D9EAD3 — name + link
+   requested   00FFFF — name + link
+   walk-in     FFF2CC — name + link
+   self-booked F4CCCC — name + link
+   suggestion  BBDEFB — name UNDISCLOSED, NO link
+   pending     — not yet confirmed or requested
+═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   TRIP DATA
+   Source: planning canvas 12.xlsx
+   Guests: Mark Gillespie, Penny, Danny, Amanda
+   Arrival Sun 20 Dec 2026 · Tokyo · departure TBC
+   mapsLink: paste verbatim maps.app.goo.gl links here when available
+             (renderer prefers mapsLink over q)
+═══════════════════════════════════════════════════════ */
+var TRIP = {
+  startDate:'2026-12-20',
+  endDate:  null,            /* departure TBC — set e.g. '2026-12-28' when known */
+  days:[
+
+    /* ── DAY 1 · Sun 20 Dec · Arrival ── */
+    {
+      date:'2026-12-20', dayNum:1, weekday:'Sunday, 20 December',
+      city:'Tokyo', hotel:null, occasion:null, feature:false,
+      notes:'Evening arrival at Haneda Terminal 3. Nothing planned tonight beyond getting to the hotel and settling in — a light bite near the hotel is the right call after a long-haul flight.',
+      stops:[
+        { time:'19:25', type:'flight', badge:'Logistics', badgeType:'logistics',
+          title:'Arrive — Tokyo Haneda (HND)',
+          sub:'Air France AF274 · Terminal 3',
+          q:'Haneda Airport Terminal 3 Tokyo', mapsLink:null, taxi:false,
+          notes:'Allow 45–60 minutes for immigration and baggage at an evening arrival. Withdraw yen at the 7-Eleven or Japan Post ATMs in the arrivals hall — cash remains essential in Tokyo. Central Tokyo is roughly 30–45 minutes by car.',
+          alert:null },
+        { time:'~20:30', type:'transport', badge:'Not Yet Confirmed', badgeType:'pending',
+          title:'Transfer to hotel',
+          sub:'Car service to be arranged',
+          q:null, mapsLink:null, taxi:false,
+          notes:'Private transfer from Haneda will be arranged once the hotel is confirmed. Official taxis from the Terminal 3 rank are a reliable fallback.',
+          alert:null }
+      ]
+    },
+
+    /* ── DAY 2 · Mon 21 Dec ── */
+    {
+      date:'2026-12-21', dayNum:2, weekday:'Monday, 21 December',
+      city:'Tokyo', hotel:null, occasion:null, feature:false,
+      notes:'A gentle first full day to adjust to the time difference. December in Tokyo is dry, bright and cold — ideal walking weather.',
+      stops:[
+        { time:'', type:'restaurant', badge:'Not Yet Confirmed', badgeType:'pending',
+          title:'Lunch & Dinner',
+          sub:'Programme in development',
+          q:null, mapsLink:null, taxi:false,
+          notes:'Not yet confirmed or requested. Options will be shared for approval before any reservation is made.',
+          alert:null }
+      ]
+    },
+
+    /* ── DAY 3 · Tue 22 Dec · Harutaka ── */
+    {
+      date:'2026-12-22', dayNum:3, weekday:'Tuesday, 22 December',
+      city:'Tokyo', hotel:null, occasion:null, feature:true,
+      notes:'The first headline meal of the trip: Harutaka in Ginza at 20:30. Keep lunch light.',
+      stops:[
+        { time:'', type:'restaurant', badge:'Not Yet Confirmed', badgeType:'pending',
+          title:'Lunch',
+          sub:'Programme in development',
+          q:null, mapsLink:null, taxi:false,
+          notes:'Not yet confirmed or requested. Something light is advised ahead of an evening at the sushi counter.',
+          alert:null },
+        { time:'20:30', type:'restaurant', badge:'Confirmed', badgeType:'confirmed', featured:true,
+          title:'Harutaka',
+          sub:'Dinner · Sushi · Ginza',
+          facts:['⭐⭐⭐ Michelin','Sushi omakase'],
+          seatNote:'3 seats confirmed · a fourth is being pursued',
+          q:'Harutaka sushi Ginza Tokyo', mapsLink:null, taxi:true,
+          notes:'Chef Harutaka Takahashi trained under the Jiro school and cooks some of the most exacting Edomae sushi in Ginza today. The style is classical and disciplined — no theatrics, just rice seasoned with red vinegar at exactly the right temperature and fish aged with great judgement. Late December is prime time for tuna and the winter shellfish, and the counter is small enough that every piece arrives the moment it should be eaten. This is a meal to give your full attention.',
+          alert:'No perfume, cologne or scented products — including fabric softener. Remove rings and watches at the counter.' }
+      ]
+    },
+
+    /* ── DAY 4 · Wed 23 Dec ── */
+    {
+      date:'2026-12-23', dayNum:4, weekday:'Wednesday, 23 December',
+      city:'Tokyo', hotel:null, occasion:null, feature:false,
+      notes:'An open day. The city’s winter illuminations are at their peak this week — Marunouchi Naka-dori and Roppongi Hills’ Keyakizaka are both beautiful after dark.',
+      stops:[
+        { time:'', type:'restaurant', badge:'Not Yet Confirmed', badgeType:'pending',
+          title:'Lunch & Dinner',
+          sub:'Programme in development',
+          q:null, mapsLink:null, taxi:false,
+          notes:'Not yet confirmed or requested. Options will be shared for approval before any reservation is made.',
+          alert:null }
+      ]
+    },
+
+    /* ── DAY 5 · Thu 24 Dec · Christmas Eve · Ishikawa ── */
+    {
+      date:'2026-12-24', dayNum:5, weekday:'Thursday, 24 December',
+      city:'Tokyo', hotel:null, occasion:'Christmas Eve', feature:true,
+      notes:'Christmas Eve at Ishikawa in Kagurazaka. In Japan, Christmas Eve is a big night out and taxis are in heavy demand — a booked car is strongly recommended.',
+      stops:[
+        { time:'', type:'restaurant', badge:'Not Yet Confirmed', badgeType:'pending',
+          title:'Lunch',
+          sub:'Programme in development',
+          q:null, mapsLink:null, taxi:false,
+          notes:'Not yet confirmed or requested.',
+          alert:null },
+        { time:'19:45', type:'restaurant', badge:'Confirmed', badgeType:'confirmed', featured:true,
+          title:'Ishikawa',
+          sub:'Dinner · Kaiseki · Kagurazaka',
+          facts:['⭐⭐⭐ Michelin','Kaiseki'],
+          seatNote:'4 seats available',
+          q:'Kagurazaka Ishikawa Tokyo', mapsLink:null, taxi:true,
+          notes:'Hideki Ishikawa has held three Michelin stars in Kagurazaka for well over a decade, and his kaiseki is the gold standard for the form: seasonal, deeply rooted in dashi, and warmer and less austere than its reputation suggests. The setting is a quiet townhouse off Kagurazaka’s stone alleys, which feel like old Edo after dark. December brings the great winter ingredients — crab, fugu season and root vegetables at their sweetest. A fitting way to spend Christmas Eve.',
+          alert:'No perfume, cologne or scented products — including fabric softener.' }
+      ]
+    }
+
+  ] /* end days */
+};
+
+/* Shown after the last dated day while the rest of the programme is open */
+var TBC_CARD = {
+  title:'Rest of the stay',
+  sub:'Hotel, car service and departure to be confirmed',
+  notes:'Your dates beyond Christmas Eve, hotel and departure flight are still being confirmed. Further days will appear here as soon as they are set. Note that most fine-dining restaurants in Japan close for the New Year holidays, roughly from 30 December to 4 January.'
+};
+
+/* ── RESERVATIONS (Tables tab) ── */
+var TABLES = [
+  { date:'2026-12-22', d:'22', m:'Tue · Dec', name:'Harutaka', meta:'Sushi · ⭐⭐⭐ · 20:30 · 3 seats (4th pursued)', q:'Harutaka sushi Ginza Tokyo', mapsLink:null },
+  { date:'2026-12-24', d:'24', m:'Thu · Dec', name:'Ishikawa', meta:'Kaiseki · ⭐⭐⭐ · 19:45 · Christmas Eve', q:'Kagurazaka Ishikawa Tokyo', mapsLink:null }
+];
+
+/* ── DISCOVER — Tokyo in winter ── */
+var DISCOVER_TOKYO=[
+  { cat:'Winter Season',
+    items:[
+      ['Marunouchi illuminations — Naka-dori','Marunouchi Naka-dori Tokyo','Champagne-gold lights along the tree-lined avenue, to late December'],
+      ['Keyakizaka illumination — Roppongi Hills','Keyakizaka Roppongi Hills','Blue and white lights framing Tokyo Tower'],
+      ['Tokyo Midtown Christmas','Tokyo Midtown Roppongi',null],
+      ['Ameyoko market — year-end bustle','Ameyoko Ueno Tokyo','Crab, tuna and New Year food shopping at full volume from 28 Dec'],
+      ['Joya no Kane — New Year’s Eve temple bells','Zojoji Temple Tokyo','108 strikes at midnight; Zojo-ji under Tokyo Tower is atmospheric'],
+      ['Hatsumode — first shrine visit of the year','Meiji Jingu Tokyo','Meiji Jingu is extremely crowded on 1 Jan; smaller shrines are calmer']
+    ]},
+  { cat:'Sightseeing',
+    items:[
+      ['Senso-ji + Asakusa backstreets','Senso-ji Temple Asakusa Tokyo',null],
+      ['Meiji Shrine + Yoyogi Park walk','Meiji Shrine Tokyo',null],
+      ['Nezu Museum — Kengo Kuma','Nezu Museum Aoyama Tokyo','Japanese and East Asian art in a serene garden setting'],
+      ['teamLab Borderless','teamLab Borderless Azabudai Hills Tokyo','Book timed tickets in advance'],
+      ['Imperial Palace East Gardens','Imperial Palace East Garden Tokyo','Closed around the New Year — check dates'],
+      ['Toyosu Market — early-morning tuna','Toyosu Fish Market Tokyo','Market closes over New Year'],
+      ['Kagurazaka stone alleys','Kagurazaka Tokyo','Worth an early stroll before dinner at Ishikawa'],
+      ['Daikanyama + Nakameguro','Nakameguro Tokyo',null]
+    ]},
+  { cat:'Activities',
+    items:[
+      ['Sakurai Tea Experience — modern tea ceremony','Sakurai Tea Experience Tokyo','Intimate counter, dozens of green teas'],
+      ['Kappabashi — knives & kitchenware','Kappabashi Tokyo',null],
+      ['Bar Benfiddich — cocktail omakase','Bar Benfiddich Shinjuku Tokyo',null],
+      ['Day trip to Kamakura — temples + ocean','Kamakura Japan','Clear winter days often bring views of Fuji'],
+      ['Onsen day trip — Hakone','Hakone Japan','Winter is the ideal season for hot springs']
+    ]},
+  { cat:'Shopping',
+    items:[
+      ['Ginza — Japanese craftsmanship','Ginza Tokyo shopping',null],
+      ['Isetan Shinjuku depachika','Isetan Shinjuku','Spectacular in the run-up to New Year'],
+      ['Itoya Ginza — stationery','Itoya Ginza Tokyo',null],
+      ['Nakameguro boutiques','Nakameguro Tokyo shopping',null]
+    ]}
+];
+
+/* ══════════════ HELPERS ══════════════ */
+function esc(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function gm(q,link){if(link)return link;return(q&&q.indexOf('http')===0)?q:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q||'Tokyo Japan');}
+function nav(q){return'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination='+encodeURIComponent(q||'Tokyo Japan');}
+function uber(q){return'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]='+encodeURIComponent(q);}
+
+var toastTm;
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTm);toastTm=setTimeout(function(){el.classList.remove('show');},2200);}
+function copyText(txt){
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(function(){showToast('Copied');},function(){fallbackCopy(txt);});}
+  else fallbackCopy(txt);
+}
+function fallbackCopy(txt){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);showToast('Copied');}
+window.copyAddr=function(di,si){var s=TRIP.days[di].stops[si];if(s&&s.q)copyText(s.q);};
+
+/* ══════════════ CLOCK ══════════════ */
+function jst(){return new Date(Date.now()+9*3600000);}
+function isoToday(){return jst().toISOString().slice(0,10);}
+function daysBetween(a,b){return Math.round((Date.parse(b)-Date.parse(a))/86400000);}
+function tickClock(){
+  var d=jst();
+  document.getElementById('jst-clock').textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');
+  var today=d.toISOString().slice(0,10);
+  var lbl=document.getElementById('trip-day-label');
+  if(today<TRIP.startDate){var n=daysBetween(today,TRIP.startDate);lbl.textContent=n+(n===1?' day':' days')+' to Tokyo';}
+  else if(TRIP.endDate&&today>TRIP.endDate){lbl.textContent='Journey complete · Sayonara!';}
+  else{lbl.textContent='Day '+(daysBetween(TRIP.startDate,today)+1)+' · Tokyo';}
+}
+
+/* ══════════════ WEATHER ══════════════ */
+function wmo(c){
+  if(c===0)return{i:'☀️',d:'Clear sky'};
+  if(c<=2)return{i:'⛅',d:'Partly cloudy'};
+  if(c===3)return{i:'☁️',d:'Overcast'};
+  if(c>=45&&c<=48)return{i:'🌫️',d:'Foggy'};
+  if(c>=51&&c<=67)return{i:'🌧️',d:'Rain'};
+  if(c>=71&&c<=77)return{i:'🌨️',d:'Snow'};
+  if(c>=80&&c<=82)return{i:'🌦️',d:'Showers'};
+  if(c>=95)return{i:'⛈️',d:'Thunderstorm'};
+  return{i:'🌤️',d:'Mixed'};
+}
+function wxFallback(){
+  return '<span class="wx-icon">❄️</span><div class="wx-info"><div class="wx-temp" style="font-size:13px">December Tokyo · typically 3–12°C</div><div class="wx-desc">Dry, bright and cold · live forecast appears ~2 weeks out</div></div>';
+}
+function loadWeather(){
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+WX_LAT+'&longitude='+WX_LNG+'&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=Asia%2FTokyo&forecast_days=16';
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    if(!data||!data.daily)return;
+    data.daily.time.forEach(function(date,i){
+      var el=document.getElementById('wx-'+date);if(!el)return;
+      var e=wmo(data.daily.weathercode[i]);
+      var hi=Math.round(data.daily.temperature_2m_max[i]),lo=Math.round(data.daily.temperature_2m_min[i]);
+      var rain=data.daily.precipitation_probability_max[i]||0;
+      el.innerHTML='<span class="wx-icon">'+e.i+'</span><div class="wx-info"><div class="wx-temp">'+hi+'° / '+lo+'°C · '+e.d+'</div><div class="wx-desc">Tokyo · live forecast</div></div><div class="wx-rain">💧 '+rain+'%</div>';
+    });
+  }).catch(function(){});
+}
+
+/* ══════════════ RENDER: STOP ══════════════ */
+var ICONS={flight:'✈️',transport:'🚗',restaurant:'🍽️',activity:'🎌'};
+function renderStop(stop,di,si){
+  var pending=stop.badgeType==='pending'||stop.badgeType==='suggestion';
+  var hasLoc=!pending&&!!(stop.q||stop.mapsLink);
+  var icon=stop.featured?'':'<span class="stop-icon">'+(ICONS[stop.type]||'📍')+'</span>';
+  var dot=pending?'t-pending':'t-'+(stop.type||'restaurant');
+  var cls=pending?' is-pending':(stop.featured?' is-feature':'');
+  var h='<div class="stop-item"><div class="stop-time">'+esc((stop.time||'').replace('~',''))+'</div>'
+    +'<div class="stop-dot '+dot+'"></div>'
+    +'<div class="stop-card'+cls+'"><div class="stop-top"><div class="stop-title-wrap">'
+    +'<div class="stop-title">'+icon+esc(stop.title)+'</div>'
+    +(stop.sub?'<div class="stop-subtitle">'+esc(stop.sub)+'</div>':'')
+    +'</div>'+(stop.badge?'<span class="stop-badge '+stop.badgeType+'">'+esc(stop.badge)+'</span>':'')+'</div>';
+  if(stop.facts||stop.seatNote){
+    h+='<div class="stop-facts">';
+    (stop.facts||[]).forEach(function(f){h+='<span class="fact">'+esc(f)+'</span>';});
+    if(stop.seatNote)h+='<span class="fact gold">👥 '+esc(stop.seatNote)+'</span>';
+    h+='</div>';
+  }
+  if(stop.notes)h+='<div class="stop-notes">'+esc(stop.notes)+'</div>';
+  if(stop.alert)h+='<div class="stop-alert">⚠ '+esc(stop.alert)+'</div>';
+  if(hasLoc){
+    h+='<div class="map-actions">'
+      +'<a href="'+gm(stop.q,stop.mapsLink)+'" target="_blank" rel="noopener" class="map-btn mp" aria-label="Open '+esc(stop.title)+' in Google Maps">📍 Maps</a>'
+      +'<a href="'+nav(stop.q)+'" target="_blank" rel="noopener" class="map-btn" aria-label="Directions to '+esc(stop.title)+'">🧭 Nav</a>'
+      +(stop.taxi?'<a href="'+uber(stop.q)+'" target="_blank" rel="noopener" class="map-btn taxi" aria-label="Taxi to '+esc(stop.title)+'">🚕 Taxi</a>':'')
+      +'<button type="button" class="map-btn" onclick="copyAddr('+di+','+si+')" aria-label="Copy location">⧉ Copy</button>'
+      +'</div>';
+    if(!stop.mapsLink&&stop.type==='restaurant')h+='<div class="assume">Map pin by search — exact link to follow</div>';
+  }
+  return h+'</div></div>';
+}
+
+/* ══════════════ RENDER: ITINERARY ══════════════ */
+function renderItinerary(){
+  var today=isoToday();
+  var h='<div class="trip-banner">'
+    +'<div class="trip-banner-kana">A Private Culinary Journey · Happy Camper Ltd.</div>'
+    +'<h2>Tokyo</h2>'
+    +'<div class="banner-dates">From Sunday 20 December 2026 · Four Guests</div>'
+    +'<div class="banner-chips">'
+    +'<span class="banner-chip">👥 Mark · Penny · Danny · Amanda</span>'
+    +'<span class="banner-chip">🎄 Christmas in Tokyo</span>'
+    +'<span class="banner-chip">❄️ Winter season</span>'
+    +'</div></div>'
+    +'<div class="booking-legend">'
+    +'<span class="bl-item"><span class="bl-dot confirmed"></span>Confirmed</span>'
+    +'<span class="bl-item"><span class="bl-dot requested"></span>Requested</span>'
+    +'<span class="bl-item"><span class="bl-dot walk-in"></span>Walk-in</span>'
+    +'<span class="bl-item"><span class="bl-dot self-booked"></span>Self-booked</span>'
+    +'<span class="bl-item"><span class="bl-dot suggestion"></span>Suggestion</span>'
+    +'<span class="bl-item"><span class="bl-dot pending"></span>Not Yet Confirmed</span>'
+    +'</div><div class="section-label">Daily Itinerary</div>';
+
+  var anyToday=TRIP.days.some(function(d){return d.date===today;});
+  TRIP.days.forEach(function(day,idx){
+    var isToday=day.date===today, isPast=day.date<today;
+    var isOpen=isToday||(!anyToday&&today<TRIP.startDate&&idx===0);
+    var dining=day.stops.filter(function(s){return s.type==='restaurant'&&s.badgeType==='confirmed';}).length;
+    h+='<article class="day-card'+(isToday?' is-today':'')+(isPast?' is-past':'')+(isOpen?' open':'')+(day.feature?' has-feature':'')+'" id="day-'+day.dayNum+'" style="animation-delay:'+(idx*.04).toFixed(2)+'s">'
+      +'<div class="day-header" role="button" tabindex="0" aria-expanded="'+(isOpen?'true':'false')+'" onclick="toggleDay('+day.dayNum+')">'
+      +'<div class="day-num">D'+day.dayNum+'</div><div class="day-header-info">'
+      +'<div class="day-name">'+esc(day.weekday)+'</div>'
+      +'<div class="day-sub"><span class="day-city-badge">'+esc(day.city)+'</span>'
+      +(isToday?'<span class="today-pill">TODAY</span>':'')
+      +(day.occasion?'<span class="occasion-pill">🎄 '+esc(day.occasion)+'</span>':'')
+      +(dining>0?'<span>'+dining+' confirmed table'+(dining>1?'s':'')+'</span>':'')
+      +'</div></div><span class="day-chevron">▾</span></div>'
+      +'<div class="day-body"><div class="day-body-inner">';
+    h+=day.hotel
+      ?'<div class="hotel-bar"><div style="font-size:15px">🏨</div><div style="flex:1"><div class="hb-name">'+esc(day.hotel)+'</div><div class="hb-detail">'+esc(day.city)+'</div></div></div>'
+      :'<div class="hotel-bar tbc"><div style="font-size:15px">🏨</div><div style="flex:1"><div class="hb-name" style="color:#546E7A">Hotel to be confirmed</div><div class="hb-detail" style="color:#78909C">Tokyo</div></div></div>';
+    if(day.notes)h+='<div class="day-note-bar">'+esc(day.notes)+'</div>';
+    h+='<div class="weather-widget" id="wx-'+day.date+'">'+wxFallback()+'</div><div class="timeline">';
+    day.stops.forEach(function(s,si){h+=renderStop(s,idx,si);});
+    h+='</div></div></div></article>';
+  });
+
+  h+='<article class="day-card is-tbc open"><div class="day-header" style="cursor:default">'
+    +'<div class="day-num">+</div><div class="day-header-info"><div class="day-name">'+esc(TBC_CARD.title)+'</div>'
+    +'<div class="day-sub"><span class="day-city-badge">Tokyo</span><span>'+esc(TBC_CARD.sub)+'</span></div></div></div>'
+    +'<div class="day-body"><div class="day-body-inner"><div class="day-note-bar" style="background:#F3F5F7;border-left-color:#90A4AE">'+esc(TBC_CARD.notes)+'</div></div></div></article>';
+
+  document.getElementById('tab-itinerary').innerHTML=h;
+  try{loadWeather();}catch(e){}
+}
+window.toggleDay=function(n){var c=document.getElementById('day-'+n);if(!c)return;c.classList.toggle('open');var hd=c.querySelector('.day-header');if(hd)hd.setAttribute('aria-expanded',c.classList.contains('open')?'true':'false');};
+
+/* ══════════════ RENDER: TABLES ══════════════ */
+function renderTables(){
+  var h='<div class="trip-banner"><div class="trip-banner-kana">Reservations</div><h2>Your Tables</h2><div class="banner-dates">'+TABLES.length+' confirmed · more to follow</div></div>'
+    +'<div class="section-label">✅ Confirmed</div><div class="res-card">';
+  TABLES.forEach(function(t){
+    h+='<div class="res-row"><div class="res-date"><div class="res-date-d">'+esc(t.d)+'</div><div class="res-date-m">'+esc(t.m)+'</div></div>'
+      +'<div class="res-info"><div class="res-name">'+esc(t.name)+'</div><div class="res-meta">'+esc(t.meta)+'</div></div>'
+      +'<a class="res-map" href="'+gm(t.q,t.mapsLink)+'" target="_blank" rel="noopener" aria-label="Map for '+esc(t.name)+'">📍</a></div>';
+  });
+  h+='</div><div class="util-card" style="margin-top:14px"><div class="util-card-title">Before every meal</div>'
+    +'<div class="rule-item critical"><span class="rule-icon">🚫</span><div class="rule-text"><strong>No fragrance — critical</strong>No perfume, cologne, scented hair products or fabric softener on dining days. At a sushi or kaiseki counter even a trace interferes with the food for the chef and every other guest.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">⏰</span><div class="rule-text"><strong>Arrive 5–10 minutes early</strong>Service begins for the whole counter at once. Allow extra travel time on Christmas Eve.</div></div>'
+    +'</div>';
+  document.getElementById('tab-tables').innerHTML=h;
+}
+
+/* ══════════════ RENDER: DISCOVER ══════════════ */
+function renderDiscover(){
+  var h='<div class="disc-banner"><h2>🗼 Discover Tokyo</h2><p>Winter season · Sightseeing · Activities · Shopping</p></div>'
+    +'<div class="disc-feature"><div class="disc-feature-label">Editor’s Reference</div>'
+    +'<div class="disc-feature-title">The Ultimate Shopping List</div><div class="disc-feature-by">John Scherrer</div>'
+    +'<p class="disc-feature-p">A hand-built Google Map of Japan’s most carefully chosen shops — vintage, design, denim, ceramics, kitchenware, craft. The best on-the-ground reference for serious shopping in Tokyo.</p>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><a class="disc-feature-cta" href="https://maps.app.goo.gl/y5dzkZR4L56yY3po8" target="_blank" rel="noopener">Open the Map →</a>'
+    +'<a class="disc-feature-ig" href="https://www.instagram.com/bigtime_makin_it_nice" target="_blank" rel="noopener">📷 @bigtime_makin_it_nice</a></div></div>'
+    +'<div class="disc-feature plum"><div class="disc-feature-label">Editor’s Reference</div>'
+    +'<div class="disc-feature-title">Tokyo Coffee Shops</div><div class="disc-feature-by">Alex Rivera</div>'
+    +'<p class="disc-feature-p">Speciality roasters, neighbourhood kissaten and hidden gems — open with live location on and look for nearby pins.</p>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><a class="disc-feature-cta" href="https://maps.app.goo.gl/YxU9bZiQoawn7oqy9?g_st=i" target="_blank" rel="noopener">Open the Map →</a>'
+    +'<a class="disc-feature-ig" href="https://www.instagram.com/alexrivio" target="_blank" rel="noopener">📷 @alexrivio</a></div></div>';
+  DISCOVER_TOKYO.forEach(function(sec){
+    h+='<div class="disc-card"><div class="disc-card-head"><div class="disc-card-head-title">'+esc(sec.cat)+'</div></div><div class="disc-card-body">';
+    sec.items.forEach(function(it){
+      h+='<a class="disc-item" href="'+gm(it[1])+'" target="_blank" rel="noopener"><div class="disc-item-info"><div class="disc-item-name">'+esc(it[0])+'</div>'
+        +(it[2]?'<div class="disc-item-sub">'+esc(it[2])+'</div>':'')+'</div><div class="disc-arrow">→</div></a>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('tab-discover').innerHTML=h;
+}
+
+/* ══════════════ RENDER: UTILITIES ══════════════ */
+function renderUtilities(){
+  document.getElementById('tab-utilities').innerHTML=''
+    +'<div class="section-label">Currency Converter</div>'
+    +'<div class="util-card"><div class="util-card-title">JPY ↔ USD</div><div class="fx-row">'
+    +'<div class="fx-group"><label class="fx-label" for="fx-jpy">🇯🇵 Japanese Yen</label><input class="fx-input" id="fx-jpy" type="number" inputmode="numeric" value="10000"></div>'
+    +'<button type="button" class="fx-swap-btn" id="fx-swap" aria-label="Clear and restart">⇋</button>'
+    +'<div class="fx-group"><label class="fx-label" for="fx-usd">🇺🇸 US Dollar</label><input class="fx-input" id="fx-usd" type="number" inputmode="decimal"></div>'
+    +'</div><div class="fx-rate-note">1 USD ≈ '+FX_RATE.toFixed(2)+' JPY · planning rate, September 2026</div></div>'
+    +'<div class="section-label">Christmas &amp; New Year in Japan</div>'
+    +'<div class="util-card"><ul class="info-list">'
+    +'<li><span class="info-emoji">🎄</span><div class="info-text"><strong>Christmas Eve is date night</strong>Christmas is not a public holiday in Japan, but 24 December is one of the busiest restaurant nights of the year. Book cars in advance.</div></li>'
+    +'<li><span class="info-emoji">🎍</span><div class="info-text"><strong>New Year closures</strong>Most fine-dining restaurants, many shops and some museums close from around 30 December to 4 January. Hotels remain the best option for dining over this period.</div></li>'
+    +'<li><span class="info-emoji">🍜</span><div class="info-text"><strong>Toshikoshi soba</strong>Buckwheat noodles eaten on New Year’s Eve for a long life — a lovely tradition to join.</div></li>'
+    +'<li><span class="info-emoji">🔔</span><div class="info-text"><strong>Joya no kane</strong>Temples ring their bells 108 times at midnight on 31 December.</div></li>'
+    +'</ul></div>'
+    +'<div class="section-label">Quick Reference</div>'
+    +'<div class="util-card"><ul class="info-list">'
+    +'<li><span class="info-emoji">💴</span><div class="info-text"><strong>Cash is essential</strong>Carry ¥50,000–80,000 per person. 7-Eleven and Japan Post ATMs accept foreign cards.</div></li>'
+    +'<li><span class="info-emoji">❄️</span><div class="info-text"><strong>December in Tokyo</strong>Typically 3–12°C, dry and sunny. A warm coat, scarf and comfortable shoes are all you need.</div></li>'
+    +'<li><span class="info-emoji">📱</span><div class="info-text"><strong>Suica (Mobile Wallet)</strong>Wallet app → + → Transit card → Suica. Works on all Tokyo trains and buses and at convenience stores.</div></li>'
+    +'<li><span class="info-emoji">⏰</span><div class="info-text"><strong>Time zone: JST = UTC+9</strong>No daylight saving. 9 hours ahead of London, 8 ahead of Paris in December.</div></li>'
+    +'<li><span class="info-emoji">🔌</span><div class="info-text"><strong>Electricity: 100V · Type A</strong>Flat two-pin plugs. European and UK visitors need an adapter.</div></li>'
+    +'<li><span class="info-emoji">📡</span><div class="info-text"><strong>eSIM recommended</strong>Activate before landing: Airalo, Holafly or Ubigi.</div></li>'
+    +'</ul></div>'
+    +'<div class="section-label">Dining Etiquette</div>'
+    +'<div class="util-card">'
+    +'<div class="rule-item critical"><span class="rule-icon">🚫</span><div class="rule-text"><strong>No fragrance — critical</strong>No perfume, cologne, scented hair products or fabric softener on dining days. Even a trace disrupts the chef and other guests at the counter.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">⏰</span><div class="rule-text"><strong>Punctuality</strong>The meal starts at the same moment for the whole counter. Tokyo restaurants often sit on quiet back streets, so allow generous transfer time.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">💍</span><div class="rule-text"><strong>Protect the counter</strong>Remove rings, bracelets and watches at sushi counters. Many are single pieces of hinoki cypress.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">📷</span><div class="rule-text"><strong>Ask before photographing</strong>Some counters don’t allow photos. When they do, keep it quick and discreet.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">💰</span><div class="rule-text"><strong>No tipping</strong>Tipping isn’t done in Japan. Say <em>Gochisousama deshita</em> to the chef after the meal instead.</div></div>'
+    +'<div class="rule-item"><span class="rule-icon">🔒</span><div class="rule-text"><strong>Reservations are firm</strong>Happy Camper’s access is built on years of trust. Once confirmed, a reservation is a commitment.</div></div>'
+    +'</div>';
+  var j=document.getElementById('fx-jpy'),u=document.getElementById('fx-usd');
+  function fJ(){var v=parseFloat(j.value);u.value=isNaN(v)?'':(v/FX_RATE).toFixed(2);}
+  function fU(){var v=parseFloat(u.value);j.value=isNaN(v)?'':String(Math.round(v*FX_RATE));}
+  j.addEventListener('input',fJ);u.addEventListener('input',fU);
+  document.getElementById('fx-swap').addEventListener('click',function(){j.value='10000';fJ();});
+  fJ();
+}
+
+/* ══════════════ RENDER: EMERGENCY ══════════════ */
+function row(icon,cls,label,sub,href,btnCls,btn){
+  return '<div class="contact-row"><div class="contact-left"><div class="contact-icon '+cls+'">'+icon+'</div><div><div class="contact-label">'+label+'</div><div class="contact-sub">'+sub+'</div></div></div><a href="'+href+'" class="call-btn '+btnCls+'">'+btn+'</a></div>';
+}
+function renderEmergency(){
+  var P=[
+    ['Arigatou gozaimasu','ありがとうございます','Thank you very much'],
+    ['Sumimasen','すみません','Excuse me / Sorry'],
+    ['Gochisousama deshita','ごちそうさまでした','Thank you for the meal'],
+    ['Kyukyusha wo yonde kudasai','救急車を呼んでください','Please call an ambulance'],
+    ['Keisatsu wo yonde kudasai','警察を呼んでください','Please call the police'],
+    ['Byoin wa doko desu ka?','病院はどこですか？','Where is the hospital?'],
+    ['~ wa taberaremasen','〜は食べられません','I cannot eat ~'],
+    ['~ made onegai shimasu','〜までお願いします','To ~, please (to a taxi driver)'],
+    ['Eigo ga hanasemasu ka?','英語が話せますか？','Do you speak English?'],
+    ['Ryoshuusho wo onegai shimasu','領収書をお願いします','Receipt, please']
+  ];
+  var ph='';P.forEach(function(p){ph+='<li><span class="info-emoji">💬</span><div class="info-text"><strong>'+p[0]+' · '+p[1]+'</strong>'+p[2]+'</div></li>';});
+  document.getElementById('tab-emergency').innerHTML=''
+    +'<div class="emergency-banner"><h2>Emergency &amp; Contacts</h2><p>Tokyo · December 2026 · Japan has excellent emergency services</p></div>'
+    +'<div class="section-label">Emergency Numbers</div><div class="contact-card">'
+    +row('🚨','ci-r','Police','All emergency police calls','tel:110','cr','📞 110')
+    +row('🚑','ci-r','Ambulance &amp; Fire','Medical emergencies','tel:119','cr','📞 119')
+    +row('ℹ️','ci-b','Japan Visitor Hotline','24h · English · JNTO','tel:+815038162787','cb','📞 Call')
+    +'</div>'
+    +'<div class="section-label">Happy Camper — Your Team</div><div class="contact-card">'
+    +row('🌿','ci-n','Tomoko — Happy Camper','Owner &amp; CEO · Tokyo','tel:+819061589006','cn','📞 Call')
+    +row('🌿','ci-n','Gerhard — Happy Camper','Programme director · WhatsApp','tel:+818069892107','cn','📞 Call')
+    +'</div>'
+    +'<div class="section-label">Medical — Tokyo</div><div class="contact-card">'
+    +row('🏥','ci-b','St. Luke’s International Hospital','English-speaking · Tsukiji','tel:+81335507166','cb','📞 Call')
+    +row('🏥','ci-b','Tokyo Midtown Medical Center','English-speaking · Roppongi','tel:+81354130080','cb','📞 Call')
+    +'</div>'
+    +'<div class="section-label">Embassy</div><div class="util-card" style="font-size:12.5px;color:#233D5C">Embassy details will be added once nationality and passports are confirmed.</div>'
+    +'<div class="section-label">Arrival</div><div class="contact-card">'
+    +row('✈️','ci-o','Air France AF274 → Haneda T3','19:25 · Sunday 20 December 2026',gm('Haneda Airport Terminal 3 Tokyo'),'cn','📍 Map')
+    +'</div>'
+    +'<div class="section-label">Useful Japanese</div><div class="util-card"><ul class="info-list">'+ph+'</ul></div>';
+}
+
+/* ══════════════ TABS + INIT ══════════════ */
+document.querySelector('.tab-nav').addEventListener('click',function(e){
+  var btn=e.target.closest('.tab-btn');if(!btn)return;
+  var name=btn.getAttribute('data-tab');
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===name);});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='tab-'+name);});
+  document.getElementById('main-content').scrollTop=0;
+});
+function fixHeaderOffset(){var h=document.getElementById('app-header'),m=document.getElementById('main-content');if(h&&m)m.style.paddingTop=h.offsetHeight+'px';}
+function safe(fn,name){try{fn();}catch(e){console.error(name+' error:',e);}}
+function init(){
+  safe(renderItinerary,'Itinerary');safe(renderTables,'Tables');safe(renderDiscover,'Discover');
+  safe(renderUtilities,'Utilities');safe(renderEmergency,'Emergency');
+  safe(tickClock,'Clock');setInterval(function(){safe(tickClock,'Clock');},1000);
+  fixHeaderOffset();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+window.addEventListener('resize',fixHeaderOffset);
+window.addEventListener('load',fixHeaderOffset);
+}());
+</script>
+</body>
+</html>
 
