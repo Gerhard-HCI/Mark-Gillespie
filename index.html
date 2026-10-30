@@ -258,6 +258,31 @@
       .tab-btn{font-size:12px;padding:10px 18px}
       .tab-panel{max-width:900px;margin-left:auto;margin-right:auto;padding:24px 32px 60px}
     }
+  
+    /* ── TAXI CARD — shown to the driver (hex only: iOS Safari) ── */
+    .map-btn.tx-btn{background-color:#FFF6E0!important;color:#8A5E12!important;border-color:rgba(176,124,34,.35)!important;font-weight:600}
+    .tx-ov{position:fixed;top:0;left:0;right:0;bottom:0;background-color:rgba(10,15,30,.72);z-index:100000;display:none;align-items:flex-end;justify-content:center}
+    .tx-ov.on{display:flex}
+    .tx-sheet{background-color:#FAF8F4;width:100%;max-width:620px;max-height:92vh;border-radius:22px 22px 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 18px calc(24px + env(safe-area-inset-bottom));animation:txUp .3s cubic-bezier(.16,1,.3,1)}
+    @keyframes txUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .tx-grab{width:38px;height:4px;background-color:#C5CBD6;border-radius:99px;margin:0 auto 14px}
+    .tx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .tx-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:500;color:#141B2D;line-height:1.2}
+    .tx-title-jp{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:15px;color:#3A4866;margin-top:3px}
+    .tx-close{width:40px;height:40px;border-radius:50%;flex-shrink:0;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;background-color:#FFFFFF!important;color:#55607A!important;border:1px solid #E2E6EF!important}
+    .tx-card{background-color:#FFFFFF;border-radius:16px;padding:24px 18px;text-align:center;border:1px solid #E2E6EF}
+    .tx-to{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#55607A;margin-bottom:12px}
+    .tx-name{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:30px;line-height:1.3;color:#000000;font-weight:600;margin-bottom:6px}
+    .tx-name-en{font-size:13px;color:#55607A;margin-bottom:18px}
+    .tx-addr{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:25px;line-height:1.65;color:#000000;font-weight:600;padding:16px 8px;border-top:2px solid #000000;border-bottom:2px solid #000000;word-break:break-word}
+    .tx-ask{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;font-size:20px;color:#000000;margin-top:18px;line-height:1.5}
+    .tx-ask-en{font-size:12px;color:#55607A;margin-top:5px;font-style:italic}
+    .tx-acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .tx-act{flex:1 1 30%;min-height:46px;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #D6DCE8!important;background-color:#FFFFFF!important;color:#2A3450!important}
+    .tx-act.pri{background-color:#0D2847!important;color:#FFFFFF!important;border-color:#0D2847!important}
+    .tx-act.go{background-color:#FFF6E0!important;color:#8A5E12!important;border-color:rgba(176,124,34,.35)!important}
+    .tx-foot{font-size:11.5px;color:#55607A;text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid #E2E6EF;line-height:1.6}
+    .tx-foot em{color:#7A869E}
   </style>
 </head>
 <body style="background-color:#FAF8F4">
@@ -268,7 +293,7 @@
       <span class="hdr-flag">🗾</span>
       <div>
         <div class="hdr-dest">Tokyo · December 2026</div>
-        <div class="hdr-hc">Happy Camper · v2</div>
+        <div class="hdr-hc">Happy Camper · v3</div>
       </div>
     </div>
     <div class="hdr-right">
@@ -301,6 +326,7 @@
   <section id="tab-statement" class="tab-panel" aria-label="Statement"></section>
   <section id="tab-emergency" class="tab-panel" aria-label="Emergency"></section>
 </main>
+<div class="tx-ov" id="tx-ov" onclick="if(event.target===this)closeTaxi()"><div class="tx-sheet" role="dialog" aria-modal="true" aria-label="Show the driver"><div class="tx-grab"></div><div class="tx-head"><div><div class="tx-title">Show the driver</div><div class="tx-title-jp">タクシーの運転手にお見せください</div></div><button type="button" class="tx-close" onclick="closeTaxi()" aria-label="Close">&times;</button></div><div id="tx-body"></div><div class="tx-foot">住所は Google マップの日本語表記のとおりです。<br><em>Address as Google Maps shows it in Japanese.</em></div></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -550,6 +576,49 @@ function loadWeather(){
 
 /* ══════════════ RENDER: STOP ══════════════ */
 var ICONS={flight:'✈️',transport:'🚗',restaurant:'🍽️',activity:'🎌'};
+/* ═══ JAPANESE PLACE DIRECTORY · taxi card ═══
+   addr = address in Japanese as Google Maps shows it to a Japanese user; each entry
+   cross-checked against the Google Places result (postcode + romanised address).
+   TAXI_KEY maps a stop's q string to its entry; a stop can also carry ja:'key' directly. */
+var JA_DIR = {
+  harutaka:{ name:'鮨 はるたか', en:'Harutaka', addr:'〒104-0061 東京都中央区銀座8-3-1 6階', tel:'+81335731144' },
+  ishikawa:{ name:'神楽坂 石かわ', en:'Kagurazaka Ishikawa', addr:'〒162-0825 東京都新宿区神楽坂5-37 高村ビル 1F', tel:'+81352250173' }
+};
+var TAXI_KEY = {
+  'Harutaka sushi Ginza Tokyo':'harutaka',
+  'Kagurazaka Ishikawa Tokyo':'ishikawa'
+};
+function taxiKey(s){
+  if(!s||s.type==='flight'||s.status==='suggestion'||s.badgeType==='suggestion')return null;
+  var k=s.ja||TAXI_KEY[s.q];return(k&&JA_DIR[k])?k:null;
+}
+function taxiBtn(k,di,si){
+  return '<button type="button" class="map-btn tx-btn" onclick="showTaxi(\''+k+'\','+di+','+si+')" aria-label="Show the address in Japanese to a taxi driver">🚕 Taxi</button>';
+}
+window.showTaxi=function(k,di,si){
+  var j=JA_DIR[k];if(!j)return;
+  var s=null;try{s=TRIP.days[di].stops[si];}catch(e){}
+  var maps=s?gm(s.q,s.mapsLink):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(j.addr);
+  var extra='';try{extra=(function(s){return s&&s.q?'<a href="'+uber(s.q)+'" target="_blank" rel="noopener" class="tx-act go">🚕 Uber</a>':'';})(s,di);}catch(e){}
+  document.getElementById('tx-body').innerHTML=''
+    +'<div class="tx-card">'
+    +'<div class="tx-to">行き先 · DESTINATION</div>'
+    +'<div class="tx-name">'+esc(j.name)+'</div>'
+    +'<div class="tx-name-en">'+esc(j.en)+'</div>'
+    +'<div class="tx-addr">'+esc(j.addr)+'</div>'
+    +'<div class="tx-ask">ここまでお願いします。</div>'
+    +'<div class="tx-ask-en">Please take me here.</div>'
+    +'</div>'
+    +'<div class="tx-acts">'
+    +'<a href="'+maps+'" target="_blank" rel="noopener" class="tx-act pri">📍 Maps</a>'
+    +(j.tel?'<a href="tel:'+j.tel+'" class="tx-act">📞 Call venue</a>':'')
+    +extra
+    +'</div>';
+  document.getElementById('tx-ov').classList.add('on');
+};
+window.closeTaxi=function(){var o=document.getElementById('tx-ov');if(o)o.classList.remove('on');};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTaxi();});
+
 function renderStop(stop,di,si){
   var pending=stop.badgeType==='pending'||stop.badgeType==='suggestion';
   var hasLoc=!pending&&!!(stop.q||stop.mapsLink);
@@ -570,11 +639,12 @@ function renderStop(stop,di,si){
   }
   if(stop.notes)h+='<div class="stop-notes">'+esc(stop.notes)+'</div>';
   if(stop.alert)h+='<div class="stop-alert">⚠ '+esc(stop.alert)+'</div>';
+  var tk=taxiKey(stop);
   if(hasLoc){
     h+='<div class="map-actions">'
       +'<a href="'+gm(stop.q,stop.mapsLink)+'" target="_blank" rel="noopener" class="map-btn mp" aria-label="Open '+esc(stop.title)+' in Google Maps">📍 Maps</a>'
       +'<a href="'+nav(stop.q)+'" target="_blank" rel="noopener" class="map-btn" aria-label="Directions to '+esc(stop.title)+'">🧭 Nav</a>'
-      +(stop.taxi?'<a href="'+uber(stop.q)+'" target="_blank" rel="noopener" class="map-btn taxi" aria-label="Taxi to '+esc(stop.title)+'">🚕 Taxi</a>':'')
+      +(tk?taxiBtn(tk,di,si):'')+(!tk&&stop.taxi?'<a href="'+uber(stop.q)+'" target="_blank" rel="noopener" class="map-btn taxi" aria-label="Taxi to '+esc(stop.title)+'">🚕 Taxi</a>':'')
       +'<button type="button" class="map-btn" onclick="copyAddr('+di+','+si+')" aria-label="Copy location">⧉ Copy</button>'
       +'</div>';
     if(!stop.mapsLink&&stop.type==='restaurant')h+='<div class="assume">Map pin by search — exact link to follow</div>';
