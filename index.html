@@ -293,7 +293,7 @@
       <span class="hdr-flag">🗾</span>
       <div>
         <div class="hdr-dest">Tokyo · December 2026</div>
-        <div class="hdr-hc">Happy Camper · v3</div>
+        <div class="hdr-hc">Happy Camper · v4</div>
       </div>
     </div>
     <div class="hdr-right">
@@ -518,9 +518,35 @@ var DISCOVER_TOKYO=[
 
 /* ══════════════ HELPERS ══════════════ */
 function esc(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function gm(q,link){if(link)return link;return(q&&q.indexOf('http')===0)?q:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q||'Tokyo Japan');}
-function nav(q){return'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination='+encodeURIComponent(q||'Tokyo Japan');}
-function uber(q){return'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]='+encodeURIComponent(q);}
+/* Verified Google Place IDs (Nov 2026), keyed by the stop / table / Discover q value.
+   Area and category searches (Kagurazaka, Nakameguro, Ginza, Kamakura, Hakone) stay as searches. */
+var PLACE_IDS = {
+  "Haneda Airport Terminal 3 Tokyo":["Haneda Airport Terminal 3","ChIJEzipOlRhGGAR3-3UwuMqAnI"],
+  "Harutaka sushi Ginza Tokyo":["Ginza Harutaka","ChIJ04DI3-iLGGARdv1aRxgdFO0"],
+  "Kagurazaka Ishikawa Tokyo":["Kagurazaka Ishikawa","ChIJa0WEW1qMGGARPztXG-uvYjI"],
+  "Marunouchi Naka-dori Tokyo":["Marunouchi Naka-Dori Ave.","ChIJo7Mtxe-LGGARKusZ6He1gNs"],
+  "Keyakizaka Roppongi Hills":["Roppongi Keyakizaka Dori","ChIJA3-7Q3aLGGAR8b-_rThWjpU"],
+  "Tokyo Midtown Roppongi":["Tokyo Midtown","ChIJU2MukniLGGAR1qSN4ds5Pus"],
+  "Ameyoko Ueno Tokyo":["Ameyoko market","ChIJh7eDrwCPGGARCs9fpCkKS2U"],
+  "Zojoji Temple Tokyo":["Zojo-ji","ChIJC2xnkb6LGGARJL0d222opIg"],
+  "Meiji Jingu Tokyo":["Meiji Jingu","ChIJ5SZMmreMGGARcz8QSTiJyo8"],
+  "Meiji Shrine Tokyo":["Meiji Jingu","ChIJ5SZMmreMGGARcz8QSTiJyo8"],
+  "Senso-ji Temple Asakusa Tokyo":["Senso-ji","ChIJ8T1GpMGOGGARDYGSgpooDWw"],
+  "Nezu Museum Aoyama Tokyo":["Nezu Museum","ChIJxU48-2OLGGARHMtB5RAhytA"],
+  "teamLab Borderless Azabudai Hills Tokyo":["teamLab Borderless","ChIJQ5Sa1PqJGGARUSaNKKOrMVg"],
+  "Imperial Palace East Garden Tokyo":["Imperial Palace East National Gardens","ChIJPfFaQhOMGGAR-QPbNQoAG6M"],
+  "Toyosu Fish Market Tokyo":["Toyosu Market","ChIJW4-7z_iJGGAR3DNQUg6tv9Y"],
+  "Sakurai Tea Experience Tokyo":["Sakurai Japanese Tea Experience","ChIJTbLt33CLGGAR48rC9XJhbLU"],
+  "Kappabashi Tokyo":["Kappabashi Kitchen Supply Town","ChIJXYV-6JWOGGAR85vIZbM1RCE"],
+  "Bar Benfiddich Shinjuku Tokyo":["Bar Benfiddich","ChIJZUTGW9GMGGAROJ7G4sU221Q"],
+  "Isetan Shinjuku":["Isetan Shinjuku","ChIJ9ztrpduMGGARte1BM8ccdIs"],
+  "Itoya Ginza Tokyo":["Ginza Itoya","ChIJKQAKAOSLGGARwGhpOXWgfYo"]
+};
+/* Full Google addresses for the Copy button where a stop has no Japanese taxi entry */
+var COPY_ADDR = {};
+function gm(q,link){if(link)return link;if(q&&q.indexOf('http')===0)return q;var p=PLACE_IDS[q];if(p)return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p[0])+'&query_place_id='+p[1];return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q||'Tokyo Japan');}
+function nav(q){var p=PLACE_IDS[q];if(p)return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(p[0])+'&destination_place_id='+p[1]+'&travelmode=driving';if(q&&q.indexOf('http')===0)return q;return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(q||'Tokyo Japan')+'&travelmode=driving';}
+function uber(q,j){if(j&&j.lat)return'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]='+j.lat+'&dropoff[longitude]='+j.lng+'&dropoff[nickname]='+encodeURIComponent(j.en)+'&dropoff[formatted_address]='+encodeURIComponent(j.addr);return'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]='+encodeURIComponent(q);}
 
 var toastTm;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTm);toastTm=setTimeout(function(){el.classList.remove('show');},2200);}
@@ -529,7 +555,7 @@ function copyText(txt){
   else fallbackCopy(txt);
 }
 function fallbackCopy(txt){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);showToast('Copied');}
-window.copyAddr=function(di,si){var s=TRIP.days[di].stops[si];if(s&&s.q)copyText(s.q);};
+window.copyAddr=function(di,si){var s=TRIP.days[di].stops[si];if(!s)return;var k=s.ja||TAXI_KEY[s.q],j=k&&JA_DIR[k];var t=j?(j.en+' · '+j.addr):(COPY_ADDR[s.q]||s.q);if(t)copyText(t);};
 
 /* ══════════════ CLOCK ══════════════ */
 function jst(){return new Date(Date.now()+9*3600000);}
@@ -581,12 +607,14 @@ var ICONS={flight:'✈️',transport:'🚗',restaurant:'🍽️',activity:'🎌'
    cross-checked against the Google Places result (postcode + romanised address).
    TAXI_KEY maps a stop's q string to its entry; a stop can also carry ja:'key' directly. */
 var JA_DIR = {
-  harutaka:{ name:'鮨 はるたか', en:'Harutaka', addr:'〒104-0061 東京都中央区銀座8-3-1 6階', tel:'+81335731144' },
-  ishikawa:{ name:'神楽坂 石かわ', en:'Kagurazaka Ishikawa', addr:'〒162-0825 東京都新宿区神楽坂5-37 高村ビル 1F', tel:'+81352250173' }
+  harutaka:{ name:'青空（はるたか）', en:'Ginza Harutaka', addr:'〒104-0061 東京都中央区銀座8-3-1 銀座時傳ビル 6階', tel:'+81335731144', pid:'ChIJ04DI3-iLGGARdv1aRxgdFO0', lat:35.6692281, lng:139.7592488 },
+  ishikawa:{ name:'神楽坂 石かわ', en:'Kagurazaka Ishikawa', addr:'〒162-0825 東京都新宿区神楽坂5-37 高村ビル 1F', tel:'+81352250173', pid:'ChIJa0WEW1qMGGARPztXG-uvYjI', lat:35.7012024, lng:139.7394666 },
+  haneda:{ name:'羽田空港 第3ターミナル', en:'Haneda Airport Terminal 3', addr:'〒144-0041 東京都大田区羽田空港2-6-5', tel:'', pid:'ChIJEzipOlRhGGAR3-3UwuMqAnI', lat:35.5454613, lng:139.7687222 }
 };
 var TAXI_KEY = {
   'Harutaka sushi Ginza Tokyo':'harutaka',
-  'Kagurazaka Ishikawa Tokyo':'ishikawa'
+  'Kagurazaka Ishikawa Tokyo':'ishikawa',
+  'Haneda Airport Terminal 3 Tokyo':'haneda'
 };
 function taxiKey(s){
   if(!s||s.type==='flight'||s.status==='suggestion'||s.badgeType==='suggestion')return null;
@@ -598,8 +626,8 @@ function taxiBtn(k,di,si){
 window.showTaxi=function(k,di,si){
   var j=JA_DIR[k];if(!j)return;
   var s=null;try{s=TRIP.days[di].stops[si];}catch(e){}
-  var maps=s?gm(s.q,s.mapsLink):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(j.addr);
-  var extra='';try{extra=(function(s){return s&&s.q?'<a href="'+uber(s.q)+'" target="_blank" rel="noopener" class="tx-act go">🚕 Uber</a>':'';})(s,di);}catch(e){}
+  var maps=j.pid?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(j.en)+'&query_place_id='+j.pid:(s?gm(s.q,s.mapsLink):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(j.addr));
+  var extra='<a href="'+uber(s&&s.q,j)+'" target="_blank" rel="noopener" class="tx-act go">🚕 Uber</a>';
   document.getElementById('tx-body').innerHTML=''
     +'<div class="tx-card">'
     +'<div class="tx-to">行き先 · DESTINATION</div>'
@@ -647,7 +675,7 @@ function renderStop(stop,di,si){
       +(tk?taxiBtn(tk,di,si):'')+(!tk&&stop.taxi?'<a href="'+uber(stop.q)+'" target="_blank" rel="noopener" class="map-btn taxi" aria-label="Taxi to '+esc(stop.title)+'">🚕 Taxi</a>':'')
       +'<button type="button" class="map-btn" onclick="copyAddr('+di+','+si+')" aria-label="Copy location">⧉ Copy</button>'
       +'</div>';
-    if(!stop.mapsLink&&stop.type==='restaurant')h+='<div class="assume">Map pin by search — exact link to follow</div>';
+    if(!stop.mapsLink&&!PLACE_IDS[stop.q]&&stop.type==='restaurant')h+='<div class="assume">Map pin by search — exact link to follow</div>';
   }
   return h+'</div></div>';
 }
